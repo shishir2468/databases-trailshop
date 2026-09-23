@@ -766,12 +766,12 @@ CREATE TABLE borrowings (
     borrow_date DATE NOT NULL DEFAULT CURRENT_DATE,
     due_date DATE NOT NULL,
     return_date DATE, -- Allows NULL for unreturned books
-    
-    -- Ensures the due date is exactly 14 days after borrow date
+
+-- Ensures the due date is exactly 14 days after borrow date
     CHECK (due_date = borrow_date + 14),
-    
-    -- Ensures the return date (if provided) isn't before the borrow date
+-- Ensures the return date (if provided) isn't before the borrow date
     CHECK (return_date IS NULL OR return_date >= borrow_date)
+    
 );
 
 
