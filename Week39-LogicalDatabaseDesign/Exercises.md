@@ -14,13 +14,14 @@ These exercises accompany the Week 39 Theory material. Refer to the theory secti
 
 ### Instructions
 
-Write `CREATE TABLE` statements for all five TrailShop tables:
+Write `CREATE TABLE` statements for all six TrailShop tables:
 
 1. `categories`
 2. `customers`
 3. `products`
-4. `orders`
-5. `order_items`
+4. `product_categories`
+5. `orders`
+6. `order_items`
 
 ### Requirements
 
@@ -35,8 +36,8 @@ For each table, you must:
 
 ### Deliverables
 
-1. A single `.sql` file with all five `CREATE TABLE` statements (executable in PostgreSQL)
-2. A short written document (1–2 pages) containing:
+1. A single `.sql` file with all six `CREATE TABLE` statements (executable in PostgreSQL)
+2. A short justification for data types, FK actions and design decisions:
    - Justification for 3 data type choices (e.g., why `NUMERIC(10,2)` for price instead of `REAL`)
    - Justification for each FK action choice (e.g., why CASCADE on `order_items.order_id`)
    - One design decision you made that wasn't specified in the requirements (e.g., whether shipping address is optional)
@@ -46,6 +47,7 @@ For each table, you must:
 After creating the tables, insert sample data:
 - At least 5 categories
 - At least 8 products (across at least 3 categories)
+- At least one product assigned to **two or more** categories via `product_categories`
 - At least 3 customers
 - At least 4 orders (across at least 2 customers)
 - At least 10 order items
