@@ -403,7 +403,76 @@ A hotel booking system has the following entities and relationships:
 > ***Your SQL***
 >
 > ```sql
-> -- Write your CREATE TABLE statements here
+
+
+-- 1. Hotels (No foreign key dependencies)
+CREATE TABLE hotels (
+    hotel_id    SERIAL       PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL,
+    city        VARCHAR(50)  NOT NULL,
+    star_rating INTEGER      CHECK (star_rating BETWEEN 1 AND 5),
+    phone       VARCHAR(20)
+);
+
+-- 2. Guests (No foreign key dependencies)
+CREATE TABLE guests (
+    guest_id        SERIAL       PRIMARY KEY,
+    first_name      VARCHAR(50)  NOT NULL,
+    last_name       VARCHAR(50)  NOT NULL,
+    email           VARCHAR(254) NOT NULL UNIQUE,
+    phone           VARCHAR(20),
+    passport_number VARCHAR(50)  UNIQUE
+);
+
+-- 3. Services (No foreign key dependencies)
+CREATE TABLE services (
+    service_id  SERIAL        PRIMARY KEY,
+    name        VARCHAR(100)  NOT NULL,
+    description TEXT,
+    price       NUMERIC(10,2) NOT NULL CHECK (price >= 0)
+);
+
+-- 4. Rooms (Weak entity, depends on Hotels)
+CREATE TABLE rooms (
+    hotel_id        INTEGER       NOT NULL REFERENCES hotels(hotel_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    room_number     VARCHAR(10)   NOT NULL,
+    room_type       VARCHAR(50)   NOT NULL,
+    floor           INTEGER,
+    price_per_night NUMERIC(10,2) NOT NULL CHECK (price_per_night > 0),
+    has_balcony     BOOLEAN       NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (hotel_id, room_number)
+);
+
+-- 5. Bookings (Depends on Guests)
+CREATE TABLE bookings (
+    booking_id     SERIAL        PRIMARY KEY,
+    guest_id       INTEGER       NOT NULL REFERENCES guests(guest_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    check_in_date  DATE          NOT NULL,
+    check_out_date DATE          NOT NULL,
+    total_amount   NUMERIC(10,2) NOT NULL CHECK (total_amount >= 0),
+    status         VARCHAR(20)   NOT NULL DEFAULT 'confirmed',
+    CHECK (check_out_date > check_in_date)
+);
+
+-- 6. Booking Rooms (Junction Table: Bookings <-> Rooms)
+CREATE TABLE booking_rooms (
+    booking_id  INTEGER     NOT NULL REFERENCES bookings(booking_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    hotel_id    INTEGER     NOT NULL,
+    room_number VARCHAR(10) NOT NULL,
+    start_date  DATE        NOT NULL,
+    end_date    DATE        NOT NULL,
+    FOREIGN KEY (hotel_id, room_number) REFERENCES rooms(hotel_id, room_number) ON DELETE RESTRICT ON UPDATE CASCADE,
+    PRIMARY KEY (booking_id, hotel_id, room_number)
+);
+
+-- 7. Booking Services (Junction Table: Bookings <-> Services)
+CREATE TABLE booking_services (
+    booking_id INTEGER NOT NULL REFERENCES bookings(booking_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    service_id INTEGER NOT NULL REFERENCES services(service_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    date_used  DATE    NOT NULL,
+    quantity   INTEGER NOT NULL CHECK (quantity > 0),
+    PRIMARY KEY (booking_id, service_id, date_used)
+);
 >
 >
 > ```
@@ -411,7 +480,9 @@ A hotel booking system has the following entities and relationships:
 > [!NOTE]
 > ***Your Answer***
 >
-> *(Explain why Room is a weak entity and how its PK reflects this.)*
+> *
+Room is a weak entity because a room cannot logically exist independently of a hotel; "Room 101" holds no meaning unless we know which hotel it belongs to. Its primary key reflects this by being a composite key (hotel_id, room_number). This combines the primary key of the owner entity (hotels) acting as a mandatory foreign key, and the weak entity's own partial key (room_number), to guarantee global uniqueness.
+*
 >
 >
 >
@@ -430,21 +501,21 @@ For each column described below, choose the best PostgreSQL data type and write 
 
 | # | Column Description | Your Data Type | Justification |
 |---|---|---|---|
-| 1 | Employee salary (exact, up to €999,999.99) | | |
-| 2 | Number of items in stock (never negative, max ~50,000) | | |
-| 3 | Whether a user's email is verified | | |
-| 4 | Customer's date of birth | | |
-| 5 | Product description (variable length, could be several paragraphs) | | |
-| 6 | Country code (always exactly 2 letters, like "FI", "US") | | |
-| 7 | IP address of a login attempt | | |
-| 8 | Order total (exact, up to €9,999,999.99) | | |
-| 9 | GPS latitude of a store location | | |
-| 10 | A unique identifier for API tokens that must be globally unique across distributed systems | | |
-| 11 | Duration of a video in seconds (always a whole number) | | |
-| 12 | Timestamp of when a record was last modified (users in multiple time zones) | | |
-| 13 | A Finnish phone number like "+358 40 123 4567" | | |
-| 14 | A percentage discount (0.00% to 100.00%) | | |
-| 15 | A product's color options (e.g., a product comes in "red", "blue", "green") | | |
+| 1 | Employee salary (exact, up to €999,999.99) |NUMERIC(8,2) | Requires exact decimal precision for money to prevent rounding errors. Total of 8 digits, 2 after the decimal. |
+| 2 | Number of items in stock (never negative, max ~50,000) |INTEGER |SMALLINT maxes out at 32,767, which is too low, so the standard INTEGER is required. |
+| 3 | Whether a user's email is verified |BOOLEAN |Perfectly maps to a True/False state, making queries highly self-documenting. |
+| 4 | Customer's date of birth |DATE |A birthdate does not require a time component or timezone handling, saving storage space. |
+| 5 | Product description (variable length, could be several paragraphs) |TEXT |TEXT handles long, variable-length character data with no practical upper limit perfectly. |
+| 6 | Country code (always exactly 2 letters, like "FI", "US") |CHAR(2) |Fixed-length strings are more performant and natively enforce the 2-character structural limit. |
+| 7 | IP address of a login attempt |INET |Postgres's native network address type automatically validates IPv4 and IPv6 format on insertion. |
+| 8 | Order total (exact, up to €9,999,999.99) |NUMERIC(9,2) |Financial totals require exact decimals; 7 digits before the decimal and 2 after equal a precision of 9. |
+| 9 | GPS latitude of a store location |DOUBLE PRECISION |Coordinates require scientific accuracy, and floating-point types efficiently store high-decimal precision. |
+| 10 | A unique identifier for API tokens that must be globally unique across distributed systems |UUID |UUIDs (128-bit) guarantee global uniqueness across distributed systems without sequence collisions. |
+| 11 | Duration of a video in seconds (always a whole number) |INTEGER |INTEGER safely supports up to ~68 years in seconds, while SMALLINT would cap out at around 9 hours. |
+| 12 | Timestamp of when a record was last modified (users in multiple time zones) |TIMESTAMPTZ |Saves the exact moment in UTC and automatically translates it to the user's localized timezone on retrieval. |
+| 13 | A Finnish phone number like "+358 40 123 4567" |VARCHAR(20) |Phone numbers contain spaces, plus signs, and leading zeroes; they are strings, not mathematical integers. |
+| 14 | A percentage discount (0.00% to 100.00%) |NUMERIC(5,2) |Enforces exact precision for fractions; allows up to 3 digits before the decimal (for 100) and 2 after. |
+| 15 | A product's color options (e.g., a product comes in "red", "blue", "green") |VARCHAR(50) |Handles short string labels efficiently while enforcing a reasonable character limit to prevent junk data. |
 
 ---
 
@@ -468,7 +539,23 @@ For each business rule below, write the appropriate PostgreSQL constraint. Provi
 > ***Your SQL***
 >
 > ```sql
-> -- Write constraints 1–5 here
+
+-- Part A: Single-Column Constraints (as they would appear in CREATE TABLE)
+
+-- 1. "A product's weight must be greater than zero (if provided)."
+weight NUMERIC CHECK (weight > 0)
+
+-- 2. "Every customer must have an email address."
+email VARCHAR(254) NOT NULL
+
+-- 3. "Product names must be unique."
+name VARCHAR(100) UNIQUE
+
+-- 4. "An employee's hire date defaults to today if not specified."
+hire_date DATE DEFAULT NOW()
+
+-- 5. "Order status can only be one of: 'new', 'confirmed', 'shipped', 'delivered', 'returned'."
+status VARCHAR(20) CHECK (status IN ('new', 'confirmed', 'shipped', 'delivered', 'returned'))
 >
 >
 > ```
@@ -485,7 +572,16 @@ For each business rule below, write the appropriate PostgreSQL constraint. Provi
 > ***Your SQL***
 >
 > ```sql
-> -- Write constraints 6–8 here
+-- Part B: Multi-Column Constraints (as they would appear in CREATE TABLE)
+
+-- 6. "A flight's arrival time must be after its departure time."
+CHECK (arrival_time > departure_time)
+
+-- 7. "In the enrollments table, the combination of student_id and course_id must be unique"
+UNIQUE (student_id, course_id)
+
+-- 8. "A discount percentage must be between 0 and 100, inclusive."
+CHECK (discount_percentage >= 0 AND discount_percentage <= 100)
 >
 >
 > ```
@@ -504,7 +600,19 @@ For each business rule below, write the appropriate PostgreSQL constraint. Provi
 > ***Your SQL***
 >
 > ```sql
-> -- Write constraints 9–12 here
+-- Part C: Foreign Key Constraints with Actions (as they would appear in CREATE TABLE)
+
+-- 9. "When a department is deleted, all employees in that department should have their department_id set to NULL"
+FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
+
+-- 10. "When a customer is deleted, prevent the deletion if the customer has any orders."
+FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE RESTRICT
+
+-- 11. "When an author is deleted, all their blog posts should be deleted automatically."
+FOREIGN KEY (author_id) REFERENCES authors(author_id) ON DELETE CASCADE
+
+-- 12. "When a course is deleted, all enrollments for that course should be removed."
+FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
 >
 >
 > ```
@@ -515,6 +623,6 @@ For each business rule below, write the appropriate PostgreSQL constraint. Provi
 
 - [x ] Exercise 1: `.sql` file with all CREATE TABLE statements + written justifications
 - [x ] Exercise 2: All 12 theory review answers
-- [ ] Exercise 3: Hotel booking schema with all tables and explanations
-- [ ] Exercise 4: Data type selections with justifications for all 15 columns
-- [ ] Exercise 5: All 12 constraints written in valid PostgreSQL syntax
+- [x ] Exercise 3: Hotel booking schema with all tables and explanations
+- [x ] Exercise 4: Data type selections with justifications for all 15 columns
+- [x ] Exercise 5: All 12 constraints written in valid PostgreSQL syntax
