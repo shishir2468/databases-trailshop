@@ -94,7 +94,7 @@ Insert the following data:
 >
 > ```sql
 > -- Write your query here
-INSERT INTO categories (name, description) VALUES
+> INSERT INTO categories (name, description) VALUES
     ('Footwear', 'Hiking boots, trail runners, and sandals'),
     ('Backpacks', 'Day packs, overnight packs, and expedition packs'),
     ('Tents', 'One-person to family-size tents'),
@@ -113,6 +113,12 @@ INSERT INTO categories (name, description) VALUES
 >
 > ```sql
 > -- Write your query here
+> INSERT INTO customers (first_name, last_name, email) VALUES
+    ('Anna', 'Virtanen', 'anna.v@email.com'),
+    ('Mikko', 'Korhonen', 'mikko.k@email.com'),
+    ('Sara', 'Mäkinen', 'sara.m@email.com'),
+    ('Juha', 'Nieminen', 'juha.n@email.com'),
+    ('Laura', 'Hämäläinen', 'laura.h@email.com');
 >
 >
 > ```
@@ -129,6 +135,17 @@ INSERT INTO categories (name, description) VALUES
 >
 > ```sql
 > -- Write your query here
+> INSERT INTO products (name, description, price, stock) VALUES
+    ('TrailMaster X4', 'Professional hiking boot with Gore-Tex lining', 149.99, 25),
+    ('LiteStep Pro', 'Lightweight trail runner for day hikes', 89.99, 40),
+    ('Summit 45L', 'Multi-day hiking backpack with rain cover', 199.99, 15),
+    ('DayTripper 20L', 'Compact day pack with hydration sleeve', 59.99, 50),
+    ('CloudNest 2P', 'Two-person ultralight tent', 349.99, 10),
+    ('StormShield 4P', 'Four-season family tent', 499.99, 5),
+    ('ThermoLayer Jacket', 'Insulated mid-layer for cold weather', 129.99, 30),
+    ('RainGuard Pro', 'Waterproof breathable rain jacket', 179.99, 20),
+    ('HydroFlask 1L', 'Insulated stainless steel water bottle', 34.99, 100),
+    ('LumaBeam 800', 'Rechargeable headlamp, 800 lumens', 44.99, 60);
 >
 >
 > ```
@@ -142,6 +159,12 @@ INSERT INTO categories (name, description) VALUES
 >
 > ```sql
 > -- Write your query here
+> INSERT INTO product_categories (product_id, category_id) VALUES
+    (1, 1), (2, 1),
+    (3, 2), (4, 2),
+    (5, 3), (6, 3),
+    (7, 4), (8, 4), (8, 5),
+    (9, 5), (10, 5);
 >
 >
 > ```
@@ -155,6 +178,12 @@ INSERT INTO categories (name, description) VALUES
 >
 > ```sql
 > -- Write your query here
+> INSERT INTO orders (customer_id, status) VALUES
+    (1, 'delivered'),
+    (2, 'shipped'),
+    (1, 'pending'),
+    (3, 'delivered'),
+    (4, 'pending');
 >
 >
 > ```
@@ -168,6 +197,17 @@ INSERT INTO categories (name, description) VALUES
 >
 > ```sql
 > -- Write your query here
+> INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES
+    (1, 1, 1, 149.99),
+    (1, 9, 2, 34.99),
+    (2, 3, 1, 199.99),
+    (2, 7, 1, 129.99),
+    (3, 5, 1, 349.99),
+    (4, 2, 1, 89.99),
+    (4, 4, 1, 59.99),
+    (4, 10, 1, 44.99),
+    (5, 6, 1, 499.99),
+    (5, 8, 1, 179.99);
 >
 >
 > ```
@@ -192,6 +232,26 @@ Perform the following updates and verify each one:
 >
 > ```sql
 > -- Write your queries here
+> -- 1. Increase price of all products in Footwear (category 1) by 10%
+> UPDATE products
+> SET price = price * 1.10
+>WHERE product_id IN (SELECT product_id FROM product_categories WHERE category_id = 1 );
+> -- 2. Change customer #3's email
+> UPDATE customers
+> SET email = 'sara.makinen.new@email.com'
+> WHERE customer_id = 3;
+> -- 3. Update the status of order #2
+> UPDATE orders
+> SET status = 'delivered'
+> WHERE order_id = 2;
+> -- 4. Set the stock of 'HydroFlask 1L' to 85
+> UPDATE products
+> SET stock = 85
+> WHERE name = 'HydroFlask 1L';
+> -- 5. Add a description to any product that has NULL
+> UPDATE products
+> SET description = 'Product description coming soon'
+> WHERE description IS NULL;
 >
 >
 > ```
@@ -202,6 +262,29 @@ Perform the following updates and verify each one:
 2. Try to delete a product that appears in `order_items` — what error do you get?
 3. Delete a category that has products linked through `product_categories`. The products should remain; only the link rows should disappear. Confirm this.
 4. Delete a customer who has no orders
+
+>[!NOTE]
+> **_Your SQL_**
+>
+> ```sql
+> -- Write your queries here
+> -- 1. Delete the most recently created order (Assuming order_id 5)
+> DELETE FROM orders WHERE order_id = 5;
+>
+> -- 2. Try to delete a product that appears in order_items
+> -- (Throws ERROR: update or delete on table "products" violates foreign key constraint)
+> DELETE FROM products WHERE product_id = 1;
+>
+> -- 3. Delete a category that has products linked
+> DELETE FROM categories WHERE category_id = 1;
+>
+> -- 4. Delete a customer who has no orders
+> DELETE FROM customers WHERE customer_id = 5;
+>
+>
+> ```
+
+---
 
 ### Task 1.6: Practice ALTER TABLE
 
@@ -215,6 +298,17 @@ Perform the following updates and verify each one:
 >
 > ```sql
 > -- Write your queries here
+> -- 1. Add a column phone
+> ALTER TABLE customers ADD COLUMN phone VARCHAR(20);
+>
+> -- 2. Add a column weight_grams
+> ALTER TABLE products ADD COLUMN weight_grams INTEGER;
+>
+> -- 3. Add a CHECK constraint to ensure weight_grams > 0
+> ALTER TABLE products ADD CONSTRAINT chk_weight_positive CHECK (weight_grams > 0);
+>
+> -- 4. Rename the stock column to quantity_in_stock
+> ALTER TABLE products RENAME COLUMN stock TO quantity_in_stock;
 >
 >
 > ```
@@ -230,7 +324,8 @@ Answer the following questions in your own words using the answer fields below:
 > [!NOTE]
 > **_Your Answer_**
 >
-> _(Write your answer here.)_
+> _(SQL stands for Structured Query Language. It was intentionally designed to resemble English sentences so that non-programmers could easily read, understand, and write queries to interact with relational databases without needing complex programming knowledge.)_
+> 
 
 2. Explain the difference between DDL and DML. Give two example commands for each.
 
