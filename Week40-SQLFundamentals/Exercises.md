@@ -38,7 +38,7 @@ Write and execute the CREATE TABLE statements for all six TrailShop tables in th
 > **_Your SQL_**
 >
 > ```sql
-> ---
+
 (CREATE TABLE categories (
     category_id  SERIAL PRIMARY KEY,
     name         VARCHAR(100) NOT NULL UNIQUE,
