@@ -38,7 +38,8 @@ Write and execute the CREATE TABLE statements for all six TrailShop tables in th
 > **_Your SQL_**
 >
 > ```sql
-> --- (CREATE TABLE categories (
+> ---
+(CREATE TABLE categories (
     category_id  SERIAL PRIMARY KEY,
     name         VARCHAR(100) NOT NULL UNIQUE,
     description  TEXT
@@ -81,7 +82,8 @@ CREATE TABLE order_items (
     product_id     INTEGER NOT NULL REFERENCES products(product_id),
     quantity       INTEGER NOT NULL CHECK (quantity > 0),
     unit_price     NUMERIC(10,2) NOT NULL CHECK (unit_price > 0)
-);) ```
+);
+
 >
 >
 > ```
@@ -99,6 +101,7 @@ Insert the following data:
 >
 > ```sql
 > -- Write your query here
+
 >
 >
 > ```
