@@ -94,7 +94,12 @@ Insert the following data:
 >
 > ```sql
 > -- Write your query here
-
+INSERT INTO categories (name, description) VALUES
+    ('Footwear', 'Hiking boots, trail runners, and sandals'),
+    ('Backpacks', 'Day packs, overnight packs, and expedition packs'),
+    ('Tents', 'One-person to family-size tents'),
+    ('Clothing', 'Outdoor clothing for all seasons'),
+    ('Accessories', 'Water bottles, headlamps, trekking poles');
 >
 >
 > ```
