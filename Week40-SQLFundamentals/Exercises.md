@@ -79,12 +79,7 @@ Write and execute the CREATE TABLE statements for all six TrailShop tables in th
 >   quantity       INTEGER NOT NULL CHECK (quantity > 0),
 >   unit_price     NUMERIC(10,2) NOT NULL CHECK (unit_price > 0)
 > );
-
->
 > 
->
->
-> ```
 
 ### Task 1.3: Insert Sample Data
 
