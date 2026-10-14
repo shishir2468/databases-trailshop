@@ -142,6 +142,10 @@ Write SQL for each, then check against the solution.
 >
 > ```sql
 > -- Write your query here
+> SELECT pc.name AS category, pp.name AS product, pp.price
+> FROM pet_products pp
+> INNER JOIN pet_categories pc ON pp.category_id = pc.category_id
+> ORDER BY pc.name ASC, pp.price ASC;
 >
 >
 > ```
@@ -165,6 +169,13 @@ ORDER BY pc.name, pp.price;
 >
 > ```sql
 > -- Write your query here
+> SELECT c.first_name || ' ' || c.last_name AS customer,
+>      SUM(s.quantity * s.unit_price) AS total_spent
+> FROM pet_customers c
+> INNER JOIN pet_sales s ON c.customer_id = s.customer_id
+> GROUP BY c.customer_id, c.first_name, c.last_name
+> ORDER BY total_spent DESC;
+> 
 >
 >
 > ```
@@ -190,6 +201,11 @@ ORDER BY total_spent DESC;
 >
 > ```sql
 > -- Write your query here
+> SELECT DISTINCT pc.name AS category
+> FROM pet_categories pc
+> INNER JOIN pet_products pp ON pc.category_id = pp.category_id
+> LEFT JOIN pet_sales s ON pp.product_id = s.product_id
+> WHERE s.sale_id IS NULL;
 >
 >
 > ```
@@ -214,6 +230,13 @@ WHERE s.sale_id IS NULL;
 >
 > ```sql
 > -- Write your query here
+> SELECT pc.name AS category,
+>         COALESCE(SUM(s.quantity * s.unit_price), 0) AS revenue
+> FROM pet_categories pc
+> LEFT JOIN pet_products pp ON pc.category_id = pp.category_id
+> LEFT JOIN pet_sales s ON pp.product_id = s.product_id
+> GROUP BY pc.category_id, pc.name
+> ORDER BY revenue DESC;
 >
 >
 > ```
@@ -240,6 +263,12 @@ ORDER BY revenue DESC;
 >
 > ```sql
 > -- Write your query here
+> SELECT pp.name, SUM(s.quantity) AS total_sold
+> FROM pet_products pp
+> INNER JOIN pet_sales s ON pp.product_id = s.product_id
+> GROUP BY pp.product_id, pp.name
+> ORDER BY total_sold DESC
+> LIMIT 1;
 >
 >
 > ```
@@ -274,7 +303,9 @@ Name three problems of file-based data management and explain how a database sol
 > [!NOTE]
 > **_Your Answer_**
 >
-> _(Write your answer here.)_
+> _Data Redundancy: File systems often duplicate data across different files (e.g., address in billing and shipping files). Databases solve this through normalization and centralized storage.
+> Data Inconsistency: Updating one file but forgetting another leads to conflicting facts. A database provides a single source of truth; updating a central record updates it everywhere.
+> Lack of Data Integrity: File systems lack strict rules. Databases solve this by enforcing constraints (like data types, NOT NULL, and FOREIGN KEY relationships) to ensure only valid data is saved._
 
 ### 3.2 (Week 37 — Theory)
 
@@ -283,7 +314,7 @@ What is the difference between a candidate key and a primary key? Can a table ha
 > [!NOTE]
 > **_Your Answer_**
 >
-> _(Write your answer here.)_
+> _A candidate key is any column or set of columns that can uniquely identify a row in a table. A primary key is the specific candidate key selected by the database designer to act as the main identifier for the table. Yes, a table can have multiple candidate keys (e.g., an employee_id, an email_address, and a social_security_number), but it can only have one primary key._
 
 ### 3.3 (Week 37 — Theory)
 
@@ -292,7 +323,7 @@ State the referential integrity rule. What happens in PostgreSQL if you try to I
 > [!NOTE]
 > **_Your Answer_**
 >
-> _(Write your answer here.)_
+> _The referential integrity rule states that any foreign key value must either match an existing primary key value in the referenced table or be NULL. If you try to insert a row that violates this rule in PostgreSQL, the database will throw a foreign key constraint violation error and block the insertion._
 
 ### 3.4 (Week 38 — Design)
 
@@ -301,7 +332,9 @@ A library lends books to members. A member can borrow many books; a book can be 
 > [!NOTE]
 > **_Your Answer_**
 >
-> _(Write your answer here.)_
+> _Entities: Members (1) and Books (1).
+> Relationship: Many-to-Many (M:N).
+> Junction Entity: Because it is an M:N relationship, a junction entity (e.g., Loans) is required. Members has a 1:M relationship with Loans, and Books has a 1:M relationship with Loans. The Loans entity stores the foreign keys for the member and the book, along with contextual data like checkout_date and return_date._
 
 ### 3.5 (Week 39 — Design)
 
@@ -312,6 +345,21 @@ For the library scenario above, write the CREATE TABLE statements (at least 3 ta
 >
 > ```sql
 > -- Write your query here
+> CREATE TABLE members (
+    member_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL);
+    CREATE TABLE books (
+    book_id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    isbn CHAR(13) UNIQUE NOT NULL
+    );CREATE TABLE loans (
+    member_id INTEGER REFERENCES members(member_id) ON DELETE CASCADE,
+    book_id INTEGER REFERENCES books(book_id) ON DELETE CASCADE,
+    checkout_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    return_date DATE,
+    PRIMARY KEY (member_id, book_id, checkout_date)
+    );
 >
 >
 > ```
@@ -325,6 +373,8 @@ Write an ALTER TABLE statement that adds a `discount_percent NUMERIC(4,2) CHECK 
 >
 > ```sql
 > -- Write your query here
+> ALTER TABLE products
+> ADD COLUMN discount_percent NUMERIC(4,2) CHECK (discount_percent BETWEEN 0 AND 50);
 >
 >
 > ```
@@ -338,6 +388,10 @@ Write an INSERT statement that adds 3 rows to a `books` table with columns: titl
 >
 > ```sql
 > -- Write your query here
+> INSERT INTO books (title, author, isbn, price) VALUES
+> ('The Hobbit', 'J.R.R. Tolkien', '9780261102217', 15.99),
+> ('Dune', 'Frank Herbert', '9780441172719', 19.99),
+> ('Neuromancer', 'William Gibson', '9780441569595', 14.50);
 >
 >
 > ```
@@ -358,7 +412,7 @@ HAVING COUNT(p.product_id) = 0;
 > [!NOTE]
 > **_Your Answer_**
 >
-> _(Write your answer here.)_
+> _This query returns a list of category names that currently have zero products assigned to them. It does this by grabbing all categories, attaching any linked products via a LEFT JOIN, and then filtering the final grouped output to only show categories where the count of associated products is exactly 0._
 
 ### 3.9 (Week 41 — Querying)
 
@@ -369,6 +423,14 @@ Write a query that finds the top 3 customers by total spending, showing their fu
 >
 > ```sql
 > -- Write your query here
+> SELECT c.first_name || ' ' || c.last_name AS full_name,
+>         SUM(oi.quantity * oi.unit_price) AS total_spent
+> FROM customers c
+> JOIN orders o ON c.customer_id = o.customer_id
+> JOIN order_items oi ON o.order_id = oi.order_id
+> GROUP BY c.customer_id, c.first_name, c.last_name
+> ORDER BY total_spent DESC
+> LIMIT 3;
 >
 >
 > ```
@@ -387,7 +449,7 @@ GROUP BY pc.category_id;
 > [!NOTE]
 > **_Your Answer_**
 >
-> _(Write your answer here.)_
+> _The query is invalid because p.name is included in the SELECT list but is neither wrapped in an aggregate function (like MIN or MAX) nor included in the GROUP BY clause. When SQL collapses the rows by category_id, it does not know which individual product name to display for that grouped category._
 
 ---
 
