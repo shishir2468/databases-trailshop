@@ -205,21 +205,29 @@ Answer the following in your own words (write 2–3 sentences per point):
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _Concurrency Conflicts: The "Monday morning fight" where multiple staff members edit the same spreadsheet simultaneously, inevitably overwriting each other's work.
+
+Data Inconsistency: Tracking 5,000 items across different sheets (inventory vs. website) guarantees mismatched prices and stock levels.
+
+Security & Access Limitations: Spreadsheets lack granular permissions, making it impossible to hide sensitive supplier costs from the marketing team while still letting them edit product descriptions._
 
 2. List **3 benefits** of switching to a database system, explaining how each one solves a problem from your list above.
 
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _Concurrency Control (MVCC): PostgreSQL allows multiple users to read and update the database simultaneously without locking each other out or corrupting data.
+
+Centralized Source of Truth: A single products table eliminates redundancy; if a price is updated, every department sees the change instantly.
+
+Role-Based Access Control: The DBMS can grant the marketing team SELECT permissions on descriptions and names, while restricting access to wholesale cost columns._
 
 3. Explain the three-schema architecture in your own words. Why is the separation into three levels useful?
 
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _The three-schema architecture divides a database into the External level (what specific apps or users see), Conceptual level (the logical tables and relationships), and Internal level (physical disk storage). This separation provides data independence, meaning developers can change physical storage hardware or add logical columns without breaking existing applications._
 
 ---
 
@@ -235,7 +243,7 @@ _(See Section 1 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _Data consists of raw, unprocessed facts without meaning, like the string "TrailMaster" or the number 15. Information is data given context and structure, such as "The TrailMaster tent has 15 units currently in stock.")_
 
 **Q2.** List and explain three disadvantages of file-based data management systems. For each, describe how it would affect TrailShop specifically.
 _(See Section 2 of this week's Theory material.)_
@@ -243,7 +251,7 @@ _(See Section 2 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _Data Isolation: Data is trapped in separate files and formats, making it difficult to link a customer's profile to their text-file order history. Integrity Problems: Spreadsheets lack strict enforcement rules, allowing an intern to accidentally enter negative prices or text into a numeric field. Program-Data Dependence: If the format of a file changes (like adding a column), every script designed to read that file will break._
 
 **Q3.** What is a DBMS? List four of its core functions.
 _(See Sections 3 and 4 of this week's Theory material.)_
@@ -251,7 +259,7 @@ _(See Sections 3 and 4 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _A Database Management System (DBMS) is software that enables users to create, maintain, and control access to a database. Four core functions include Data Definition (DDL), Data Manipulation (DML), Concurrency Control, and Security/Authorization._
 
 **Q4.** Explain program-data independence with a concrete example. Why is it important?
 _(See Section 5.2 of this week's Theory material.)_
@@ -259,7 +267,7 @@ _(See Section 5.2 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _Program-data independence means an application's code does not rely on the database's physical or logical storage structure. If TrailShop adds a new weight_kg column to the products table, the website's existing query (SELECT name, price FROM products) continues to work perfectly without requiring any code updates._
 
 **Q5.** What is metadata? Give two examples of metadata for a `products` table.
 _(See Section 8 of this week's Theory material.)_
@@ -267,7 +275,7 @@ _(See Section 8 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _Metadata is "data about data" the system catalog that describes the database's structure. Examples include the data type definition (price must be NUMERIC(10,2)) and integrity constraints (name cannot be NULL)._
 
 **Q6.** What is the three-schema architecture? Name and briefly describe each level.
 _(See Section 3.3 of this week's Theory material.)_
@@ -275,7 +283,7 @@ _(See Section 3.3 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _It is a framework that separates database design into three layers: the External level (custom views for individual users/departments), the Conceptual level (the complete logical layout of tables and relationships), and the Internal level (how the data is physically formatted and stored on disk)._
 
 **Q7.** Explain the difference between logical data independence and physical data independence.
 _(See Section 3.4 of this week's Theory material.)_
@@ -283,7 +291,7 @@ _(See Section 3.4 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _Logical data independence is the ability to change the conceptual schema (like adding a table) without affecting external views or apps. Physical data independence is the ability to change the internal storage (like adding an index or moving to a faster SSD) without altering the logical structure._
 
 **Q8.** What is a transaction? Why is atomicity important? Give a TrailShop example.
 _(See Section 5.5 of this week's Theory material.)_
@@ -291,7 +299,7 @@ _(See Section 5.5 of this week's Theory material.)_
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write your answer here.)_
+> _A transaction is a logical unit of work that must complete entirely or not at all (atomicity). For TrailShop, if a customer's order successfully deducts stock but their credit card payment fails, the entire transaction rolls back so the inventory isn't incorrectly reduced._
 
 ### True/False
 
@@ -306,7 +314,13 @@ For each statement, write **True** or **False** and correct any false statements
 > [!NOTE]
 > ***Your Answer***
 >
-> _(Write True/False and corrections for all five statements above.)_
+> _
+1. false: A DBMS stores both data and metadata
+2. true
+3: true
+4. FALSE: PostgreSQL is a free, open-source relational database management system 
+5. False. The conceptual level describes the logical structure (tables/relationships); the internal level describes how data is physically stored on disk.
+_
 
 ### Matching Exercise
 
@@ -343,16 +357,16 @@ Match each term (1–10) with its definition (A–J).
 >
 > | #   | Your Match |
 > | --- | ---------- |
-> | 1   |            |
-> | 2   |            |
-> | 3   |            |
-> | 4   |            |
-> | 5   |            |
-> | 6   |            |
-> | 7   |            |
-> | 8   |            |
-> | 9   |            |
-> | 10  |            |
+> | 1   |    F        |
+> | 2   |    H        |
+> | 3   |    B        |
+> | 4   |    A        |
+> | 5   |    C        |
+> | 6   |    G        |
+> | 7   |    D        |
+> | 8   |    e        |
+> | 9   |    I        |
+> | 10  |    J        |
 
 ---
 
