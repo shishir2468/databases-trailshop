@@ -30,7 +30,13 @@ Write the following queries using subqueries:
    > **_Your SQL_**
    >
    > ```sql
-   > -- Write your query here
+   > SELECT first_name, last_name, email
+   > FROM customers
+   > WHERE customer_id IN (
+   > SELECT customer_id
+   > FROM orders
+   > GROUP BY customer_id
+   > HAVING COUNT(order_id) > 2);
    >
    >
    > ```
