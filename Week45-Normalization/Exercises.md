@@ -468,3 +468,19 @@ For each statement, write TRUE or FALSE and briefly explain why.
 7. Armstrong's transitivity axiom states: if X → Y and Y → Z, then X → Z.
 8. Denormalization should be done before normalization to save time.
 
+ANSWERS
+FALSE. 2NF specifically eliminates partial dependencies. A table with a single-column primary key cannot have a partial dependency, so if it's in 1NF, it's automatically in 2NF.
+
+TRUE. Normalization is sequential. The definition of 3NF requires that the relation is already in 2NF.
+
+FALSE. Normalization eliminates redundancy but often scatters data across many tables, requiring computationally expensive JOINs that can decrease read performance.
+
+FALSE. A functional dependency X → Y means X uniquely identifies Y. (If you know X, you know Y).
+
+FALSE. Storing a customer's address in the orders table preserves the historical fact of where the order was actually shipped at that moment in time, which is usually a strict business requirement, not an anomaly.
+
+TRUE. BCNF eliminates all dependencies on non-candidate keys, closing a loophole in 3NF regarding overlapping composite keys.
+
+TRUE. This is the exact definition of Armstrong's transitivity axiom.
+
+FALSE. You must normalize first to create a mathematically sound, anomaly-free logical design. Denormalization is applied afterward only when specific query performance metrics prove it is necessary.
